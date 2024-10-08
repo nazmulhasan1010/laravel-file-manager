@@ -20,12 +20,13 @@ class FileManagerController extends Controller
      */
     public function index()
     {
-        $path = public_path('storage');
-
-        $fileArray = $this->get($path);
         $settings = $this->settings();
+        $path = public_path($settings['base']);
 
-        return view('nh-file-manager.file-manager', compact('fileArray', 'settings'));
+        $contains = $this->get($path);
+        $items = count($contains);
+        
+        return view('nh-file-manager.file-manager', compact('contains', 'settings', 'items'));
     }
 
 
@@ -62,7 +63,7 @@ class FileManagerController extends Controller
      */
     public function add(Request $request): string
     {
-        $folder = str_replace('storage\\', '', $request->path);
+        $folder = str_replace('storage\\', '', $request->path === 'storage' ? 'storage\\' : $request->path);
         $path = $folder . '/' . $request->name;
         $name = $path;
 

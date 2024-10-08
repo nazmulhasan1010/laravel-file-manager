@@ -69,22 +69,36 @@
                     <hr>
                     <div class="files-menu px-3">
                         <ul class="files">
-                            @foreach($fileArray as $file)
-                                @if($file['type'] === 'folder')
-                                    <li class="folder" data-path="{{ $file['path'] }}" data-item="{{ $file['items'] }}">
-                                        <span>{{ $file['name'] }}</span>
-                                    </li>
-                                @elseif($file['type'] === 'file')
-                                    <li class="file" data-ext="{{ $file['ext'] }}"><span>{{ $file['name'] }}</span></li>
-                                @endif
-                            @endforeach
+                            <li class="folder opened" data-path="{{ $settings['base'] }}" data-item="{{ $items }}"
+                                data-load="true">
+                                <span>{{ $settings['base'] }}</span>
+                                <ul class="folder-items">
+                                    @foreach($contains as $file)
+                                        @if($file['type'] === 'folder')
+                                            <li class="folder" data-path="{{ $file['path'] }}"
+                                                data-item="{{ $file['items'] }}">
+                                                <span>{{ $file['name'] }}</span>
+                                            </li>
+                                        @elseif($file['type'] === 'file')
+                                            <li class="file" data-ext="{{ $file['ext'] }}">
+                                                <span>{{ $file['name'] }}</span></li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-md-9 files-list">
                     <div class="card border-0">
                         <div class="d-flex align-items-center justify-content-between option-bar">
-                            <h6 class="card-title text-capitalize m-0 list-view-opened-folder">Files</h6>
+                            <div class="file-options d-flex">
+                                <h6 class="option card-title text-capitalize m-0 list-view-opened-folder">{{ $settings['base'] }}</h6>
+                                <button class="option nf-option-back nfp-unable">
+                                    <i class='bx bx-chevron-left'></i></button>
+                                <button class="option nf-option-forward nfp-unable">
+                                    <i class='bx bx-chevron-right'></i></button>
+                            </div>
                             <div class="file-options d-flex">
                                 <a href="" class="option nf-option-cut nfp-able"><i
                                         class='bx bx-cloud-upload'></i>Upload</a>
@@ -96,13 +110,12 @@
                                     </button>
                                     <ul class="dropdown-menu add-options nfp-unable" disabled>
                                         <li>
-                                            <button class="dropdown-item option add-option" data-add="folder" disabled>
-                                                <i class='bx bx-folder'></i>New
-                                                Folder
+                                            <button class="dropdown-item option add-option" data-add="folder">
+                                                <i class='bx bx-folder'></i>New Folder
                                             </button>
                                         </li>
                                         <li>
-                                            <button class="dropdown-item option add-option" data-add="file" disabled><i
+                                            <button class="dropdown-item option add-option" data-add="file"><i
                                                     class='bx bx-file-blank'></i>New File
                                             </button>
                                         </li>
@@ -110,17 +123,22 @@
                                 </div>
 
                                 <button class="option for-select-item nf-option-cut nfp-unable" data-bs-toggle="tooltip"
-                                   data-bs-title="Cut"><i class='bx bx-cut'></i></button>
-                                <button class="option for-select-item nf-option-copy nfp-unable" data-bs-toggle="tooltip"
-                                   data-bs-title="Copy"><i class='bx bx-copy'></i></button>
-                                <button class="option for-select-item nf-option-paste nfp-unable" data-bs-toggle="tooltip"
-                                   data-bs-title="Paste"><i class='bx bx-paste'></i></button>
-                                <button class="option for-select-item nf-option-delete nfp-unable" data-bs-toggle="tooltip"
-                                   data-bs-title="Delete"><i class='bx bx-trash'></i></button>
-                                <button class="option for-select-item nf-option-rename nfp-unable" data-bs-toggle="tooltip"
-                                   data-bs-title="Rename"><i class='bx bx-rename'></i></button>
-                                <button class="option for-select-item nf-option-edit nfp-unable" data-bs-toggle="tooltip"
-                                   data-bs-title="Edit"><i class='bx bx-edit'></i></button>
+                                        data-bs-title="Cut"><i class='bx bx-cut'></i></button>
+                                <button class="option for-select-item nf-option-copy nfp-unable"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-title="Copy"><i class='bx bx-copy'></i></button>
+                                <button class="option for-select-item nf-option-paste nfp-unable"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-title="Paste"><i class='bx bx-paste'></i></button>
+                                <button class="option for-select-item nf-option-delete nfp-unable"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-title="Delete"><i class='bx bx-trash'></i></button>
+                                <button class="option for-select-item nf-option-rename nfp-unable"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-title="Rename"><i class='bx bx-rename'></i></button>
+                                <button class="option for-select-item nf-option-edit nfp-unable"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-title="Edit"><i class='bx bx-edit'></i></button>
                                 <div class="dropdown">
                                     <button type="button" class="option dropdown-toggle border-start nfp-able"
                                             data-bs-toggle="dropdown" aria-expanded="false"><i
@@ -184,7 +202,8 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title d-flex align-items-center"><i class='bx bx-error-circle fs-3'></i> Paste Error</h5>
+                <h5 class="modal-title d-flex align-items-center"><i class='bx bx-error-circle fs-3'></i> Paste Error
+                </h5>
             </div>
             <div class="modal-body">
                 <p>Some files already exist in the target folder. Do you want to replace it?</p>

@@ -3,6 +3,7 @@ $(function () {
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     const wm = new bootstrap.Modal('#arrange-modal');
     let clipBoard = {};
+    let history = {active: null, paths: []};
 
     async function loadSettings() {
         let response = await fetch('assets/js/settings.json');
@@ -24,12 +25,16 @@ $(function () {
         placeIcon($(e), true)
     }
 
-    async function placeItems(folder, listView = false, dataPath = null) {
+    async function placeItems(folder, listView = false, dataPath = null, back = false) {
         return new Promise((resolve, reject) => {
             let path = dataPath ?? $(folder).data('path');
+            if (!back) history.paths.push(path);
+            history.active = history.paths.length - 1;
+            localStorage.setItem('data-path', path);
             loadSettings().then(data => {
                 const theme = data.theme;
                 const view = data.view;
+                const base = data.base;
                 axios.post(`nf-file-manager/items`, {path: path}).then(function (response) {
                     let data = response.data,
                         fItems = $('<ul>', {class: 'folder-items'}), fItem, lItem, gItem;
@@ -44,10 +49,12 @@ $(function () {
                     $.each(data, (i, item) => {
                         if (listView) {
                             availableOption();
-                            $('.list-view-opened-folder').text($(folder).children('span').text())
+                            let ofn = $(folder).children('span').text();
+                            $('.list-view-opened-folder').text(ofn.length > 0 ? ofn : base)
                             let info = getTypeIconByExt(item.ext);
                             let icon = item.type === 'folder' ? 'bx-folder' : info.icon;
                             let tClass = item.type === 'folder' ? 'folder' : 'file';
+
                             lItem = $('<tr>', {
                                 'data-item': item.items,
                                 'data-path': item.path,
@@ -144,9 +151,7 @@ $(function () {
 
     $(document).off('dblclick', opener).on('dblclick', '.list-view .folder, .list-view .file', async function () {
         let clicked = $(this);
-        localStorage.setItem('data-path', $(clicked).data('path'));
         await placeItems(clicked, true);
-        $('.add-options .add-option').prop('disabled', false)
     });
 
     $(document).on('click', function (event) {
@@ -157,9 +162,7 @@ $(function () {
 
     $(document).off('click', opener).on('click', '.files .folder span:not(.file span)', async function () {
         let clicked = $(this).parent('.folder');
-        localStorage.setItem('data-path', $(clicked).data('path'));
         await placeItems(clicked, true);
-        $('.add-options .add-option').prop('disabled', false)
     });
 
     $(document).off('click', '.opener').on('click', '.opener', async function () {
@@ -312,11 +315,23 @@ $(function () {
             $files.removeClass('nfp-able').addClass('nfp-unable')
         }
 
+        if (history.active) {
+            if (history.active === 1 && history.paths.length > 2) {
+                $('.file-options .nf-option-back').addClass('nfp-unable').removeClass('nfp-able')
+            }else{
+                $('.file-options .nf-option-back').removeClass('nfp-unable').addClass('nfp-able')
+            }
+        } else {
+            if (history.paths.length > 1) {
+                $('.file-options .nf-option-back').removeClass('nfp-unable').addClass('nfp-able')
+            }
+        }
+
         if (clipBoard.status === 1) $('.file-options .nf-option-paste').removeClass('nfp-unable').addClass('nfp-able');
     }
 
 
-    $(document).on('click', '.file-options .nf-option-delete', function () {
+    $(document).on('click', '.file-options .nf-option-delete.nfp-able', function () {
         let sf = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation');
         let op = [];
         let path = localStorage.getItem('data-path');
@@ -335,13 +350,13 @@ $(function () {
     })
 
 
-    $(document).on('click', '.file-options .nf-option-copy', function () {
+    $(document).on('click', '.file-options .nf-option-copy.nfp-able', function () {
         let af = $('.list-view .folder, .list-view .file');
         $(af).removeClass('nf-cut');
         clipboard('copy')
     })
 
-    $(document).on('click', '.file-options .nf-option-cut', function () {
+    $(document).on('click', '.file-options .nf-option-cut.nfp-able', function () {
         let af = $('.list-view .folder, .list-view .file');
         $(af).removeClass('nf-cut');
         let sf = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation');
@@ -364,7 +379,7 @@ $(function () {
         availableOption()
     }
 
-    $(document).on('click', '.file-options .nf-option-paste, button[data-paste]', function () {
+    $(document).on('click', '.file-options .nf-option-paste.nfp-able, button[data-paste]', function () {
         let sf = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation');
         let toDi = sf.length === 1 && $(sf).eq(0).hasClass('folder') ? $(sf).eq(0).data('path') : localStorage.getItem('data-path');
         let path = localStorage.getItem('data-path');
@@ -385,6 +400,21 @@ $(function () {
                 wm.hide();
             }
         });
+    })
+
+    $(document).on('click', '.file-options .nf-option-back.nfp-able', async function () {
+        let hpl = history.paths.length;
+        let path = history.active ? history.paths[history.active - 1] : history.paths[hpl - 2];
+
+        console.log(path)
+        if (path) {
+            await placeItems(null, true, path);
+            history.active = hpl - 2;
+        }
+    })
+
+    loadSettings().then(async data => {
+        await placeItems(null, true, data.base)
     })
 
 

@@ -14,53 +14,77 @@ trait GetPathItems
      */
     public function get($path): array
     {
-        $fileArray = [];
+        $items = [];
         $folders = File::directories($path);
         $files = File::files($path);
 
-
         foreach ($folders as $folder) {
-            $allFiles = File::allFiles($folder);
-            $allFolders = File::directories($folder);
+            $fif = File::allFiles($folder);
+            $fof = File::directories($folder);
+            $ti = count($fif) + count($fof);
+            $tsz = 0;
 
-            $totalItems = count($allFiles) + count($allFolders);
-
-            $totalSize = 0;
-            foreach ($allFiles as $file) {
-                $totalSize += File::size($file);
+            foreach ($fif as $file) {
+                $tsz += File::size($file);
             }
-            $size = $this->formatSizeUnits($totalSize);
 
+            $size = $this->formatSizeUnits($tsz);
             $path = preg_replace('/^.*public\\\\/', '', $folder);
 
-            $fileArray[] = [
-                'path' => $path,
-                'paths' => str_replace('\\', '/', $path),
-                'type' => 'folder',
-                'items' => $totalItems,
-                'size' => $size,
+            $items[] = [
+                'path' => $path, 'paths' => str_replace('\\', '/', $path),
+                'type' => 'folder', 'items' => $ti, 'size' => $size,
                 'name' => File::basename($folder)
             ];
         }
 
         foreach ($files as $file) {
-            $fileSize = File::size($file);
-            $lastModified = File::lastModified($file);
-            $mimeType = File::mimeType($file);
-            $baseName = File::basename($file);
-            $extension = File::extension($file);
+            $size = $this->formatSizeUnits(File::size($file));
+            $lm = File::lastModified($file);
+            $mt = File::mimeType($file);
+            $name = File::basename($file);
+            $ext = File::extension($file);
 
-            $fileArray[] = [
-                'type' => 'file',
-                'name' => $baseName,
-                'size' => $this->formatSizeUnits($fileSize),
-                'mime' => $mimeType,
-                'modified' => $lastModified,
-                'ext' => $extension,
+            $items[] = [
+                'type' => 'file', 'name' => $name, 'size' => $size,
+                'mime' => $mt, 'modified' => $lm, 'ext' => $ext,
                 'path' => 'storage/' . preg_replace('/^.*public\\\\/', '', realpath($file))
             ];
         }
-        return $fileArray;
+        return $items;
+    }
+
+
+    /**
+     * @param $path
+     * @return array
+     */
+    public function getAllFiles($path): array
+    {
+        $files = [];
+        $fif = File::files($path);
+        $folders = File::directories($path);
+
+        foreach ($fif as $file) {
+            $size = $this->formatSizeUnits(File::size($file));
+            $lm = File::lastModified($file);
+            $mt = File::mimeType($file);
+            $name = File::basename($file);
+            $ext = File::extension($file);
+
+            $files[] = [
+                'type' => 'file', 'name' => $name, 'size' => $size,
+                'mime' => $mt, 'modified' => $lm, 'ext' => $ext, 'dir' => $path,
+                'path' => 'storage/' . preg_replace('/^.*public\\\\/', '', realpath($file))
+            ];
+        }
+
+        $merged = [];
+        foreach ($folders as $dir) {
+            $merged[] = $this->getAllFiles($dir);
+        }
+
+        return array_merge($files, ...$merged);
     }
 
     /**
