@@ -1,0 +1,31 @@
+{
+    "name": "nh/nh-file-manager",
+    "description": "This a full file management system.",
+    "require-dev": {
+        "intervention/image": "^3.8"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Nh\\NhFileManager\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "nazmul1010",
+            "email": "nazmulhasan169369@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nh\\NhFileManager\\NhFileManagerServiceProvider"
+            ],
+            "aliases": {
+                "NhFileManager": "Nh\\NhFileManager\\NhFileManagerFacade"
+            }
+        }
+    }
+}

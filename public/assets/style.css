@@ -1,0 +1,324 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+button {
+  outline: none;
+  border: none;
+  background: none;
+}
+
+#app {
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+}
+#app .nf-btn {
+  outline: none;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 5px 20px;
+}
+#app .nf-btn.nf-btn-primary {
+  border: 1px solid #0d6efd;
+}
+#app .right-side .app-logo,
+#app .right-side .header,
+#app .left-side .app-logo,
+#app .left-side .header {
+  height: 80px;
+  width: 100%;
+}
+#app .right-side .header,
+#app .left-side .header {
+  height: 70px;
+}
+#app .right-side .app-menu,
+#app .right-side .application,
+#app .left-side .app-menu,
+#app .left-side .application {
+  height: calc(100vh - 80px);
+  width: 100%;
+  overflow: auto;
+}
+#app .left-side {
+  width: 110px;
+  height: 100vh;
+}
+#app .left-side .app-logo,
+#app .left-side .app-menu {
+  display: flex;
+}
+#app .left-side .app-logo {
+  align-items: center;
+  justify-content: center;
+}
+#app .left-side .app-logo .logo {
+  height: 80px;
+}
+#app .left-side .app-menu {
+  flex-direction: column;
+  align-items: center;
+}
+#app .left-side .app-menu .menu-item {
+  color: rgba(255, 255, 255, 0.8);
+  border: none;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+  width: 90px;
+  margin: 10px 0;
+  border-radius: 5px;
+  transition: all 0.5s ease;
+}
+#app .left-side .app-menu .menu-item.active {
+  background: rgba(255, 255, 255, 0.7);
+  color: #212529;
+}
+#app .left-side .app-menu .menu-item:not(.active):hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+#app .left-side .app-menu .menu-item i {
+  font-size: 25px;
+}
+#app .right-side {
+  width: calc(100% - 110px);
+  height: 100vh;
+  overflow: hidden;
+}
+#app .right-side .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 20px;
+  box-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+#app .right-side .header .right-items {
+  display: flex;
+  align-items: center;
+}
+#app .right-side .header .menu-item {
+  margin: 0 10px;
+}
+#app .right-side .header .menu-item:nth-child(1) {
+  margin-left: 0;
+}
+#app .right-side .header .menu-item:nth-last-child(1) {
+  margin-right: 0;
+}
+#app .right-side .header .menu-item:hover {
+  color: #fff;
+}
+#app .right-side .header .menu-item i {
+  font-size: 20px;
+}
+#app .right-side .header .search {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+#app .right-side .header .search input {
+  background: none;
+  border: none;
+  outline: none !important;
+  display: none;
+}
+#app .right-side .header .search.collapse {
+  padding: 5px 20px;
+  width: auto;
+  background: rgba(255, 255, 255, 0.2);
+}
+#app .right-side .header .search.collapse i {
+  font-size: 20px;
+  margin-left: 10px;
+}
+#app .right-side .header .search.collapse input {
+  display: block;
+}
+#app .application {
+  overflow: hidden;
+}
+#app .application .row {
+  height: 100%;
+}
+#app .profile-menu .profile-image {
+  height: 40px;
+  width: 40px;
+}
+#app .profile-menu .profile-image.rounded {
+  border-radius: 50% !important;
+}
+#app .profile-menu .menu-profile .cover-image {
+  height: 160px;
+  border-radius: 5px 5px 0 0;
+}
+#app .profile-menu .menu-profile .profile {
+  width: 100%;
+  text-align: center;
+}
+#app .profile-menu .menu-profile .profile .profile-image {
+  height: 60px;
+  width: 60px;
+  margin-top: -30px;
+  border: 3px solid #0d6efd;
+}
+#app .profile-menu .dropdown-menu {
+  padding-top: 0;
+  border: 0;
+  background: #343a40;
+  padding-bottom: 10px;
+}
+#app .profile-menu .dropdown-menu .dropdown-item {
+  padding: 5px 20px;
+}
+#app .file-menu-bar {
+  height: 100%;
+}
+#app .file-menu-bar .files-menu {
+  height: calc(100% - 60px);
+  overflow: auto;
+  margin-bottom: 10px;
+  width: 100%;
+}
+#app .file-menu-bar .files-menu ul {
+  list-style: none;
+}
+#app .file-menu-bar .files-menu ul.files {
+  padding: 0 10px;
+}
+#app .file-menu-bar .files-menu ul.files .folder {
+  margin: 8px 0;
+  transition: all 0.5s ease;
+  width: auto;
+  text-wrap: nowrap;
+}
+#app .file-menu-bar .files-menu ul.files .folder i.opener {
+  color: #fd7e14;
+  font-size: 22px;
+  border-radius: 4px;
+  padding: 0;
+}
+#app .file-menu-bar .files-menu ul.files .folder i.opener:hover {
+  background-color: #343a40;
+  color: #0d6efd;
+}
+#app .file-menu-bar .files-menu ul.files .folder span {
+  text-wrap: nowrap;
+  width: auto;
+  padding: 2px 5px 2px 0;
+  border-radius: 4px;
+  user-select: none;
+  color: #ced4da;
+}
+#app .file-menu-bar .files-menu ul.files .folder span i {
+  margin-right: 10px;
+  color: #fd7e14;
+  font-size: 22px;
+}
+#app .file-menu-bar .files-menu ul.files .folder span:hover {
+  color: #f8f9fa;
+}
+#app .file-menu-bar .files-menu ul.files .folder .folder-items {
+  display: none;
+  transition: all 0.5s ease;
+  text-wrap: nowrap !important;
+}
+#app .file-menu-bar .files-menu ul.files .folder .folder-items li.file {
+  margin-left: 24px;
+}
+#app .file-menu-bar .files-menu ul.files .folder .folder-items li.file i {
+  margin-right: 5px;
+  color: #0dcaf0;
+}
+#app .file-menu-bar .files-menu ul.files .folder.opened .folder-items:not(.closed) {
+  display: block;
+}
+#app .files-list {
+  height: 100%;
+}
+#app .files-list .option-bar .file-options .option {
+  text-decoration: none;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  transition: all 0.5s ease;
+}
+#app .files-list .option-bar .file-options .option.nfp-unable {
+  color: #6c757d;
+}
+#app .files-list .option-bar .file-options .option:not(.nfp-unable):hover {
+  background-color: #343a40;
+  border-radius: 5px;
+}
+#app .files-list .option-bar .file-options .option.nfp-able {
+  color: #f8f9fa;
+}
+#app .files-list .option-bar .file-options .option:nth-last-child(1) {
+  margin-right: 0;
+}
+#app .files-list .option-bar .file-options .option i {
+  margin-right: 5px;
+  font-size: 22px;
+}
+#app .files-list .list-view {
+  height: calc(100% - 80px);
+  overflow: auto;
+}
+#app .files-list .list-view .list-table tbody tr:hover, #app .files-list .list-view .list-table tbody tr.selected {
+  background-color: #343a40;
+}
+#app .files-list .list-view .list-table tbody tr td {
+  background: none;
+}
+#app .files-list .list-view .list-table tbody tr td:nth-child(1) {
+  color: #ced4da;
+  vertical-align: middle;
+}
+#app .files-list .list-view .list-table tbody tr td:nth-child(1) i {
+  font-size: 22px;
+  color: #fd7e14;
+  margin-right: 10px;
+}
+#app .files-list .list-view .list-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+#app .files-list .list-view .list-grid .list-item {
+  text-align: center;
+  margin-left: 10px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  width: 100px;
+  height: 90px;
+  overflow: hidden;
+  color: #ced4da;
+  border-radius: 5px;
+}
+#app .files-list .list-view .list-grid .list-item:hover, #app .files-list .list-view .list-grid .list-item.selected {
+  background-color: #343a40;
+}
+#app .files-list .list-view .list-grid .list-item i {
+  font-size: 60px;
+  color: #fd7e14;
+}
+
+/*# sourceMappingURL=style.css.map */
