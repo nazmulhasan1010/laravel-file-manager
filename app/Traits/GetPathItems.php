@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use JsonException;
 
 trait GetPathItems
@@ -126,5 +127,17 @@ trait GetPathItems
     {
         $pd = $type === 'folder' ? str_replace('storage\\', '', $path) : str_replace('storage/', '', $path);
         return str_replace('\\', '/', $pd);
+    }
+
+    /**
+     * @param $path
+     * @return array|string
+     */
+    public function mkDir($path): array|string
+    {
+        if (!Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->makeDirectory($path);
+        }
+        return 1;
     }
 }

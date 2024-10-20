@@ -249,9 +249,6 @@ $(function () {
 
     $(document).on('mousedown', '.list-view', function (event) {
         if ($(event.target).is('.list-view .file, .list-view .folder')) return;
-
-        console.log(event.target);
-
         isDragging = true;
         startX = event.pageX;
         startY = event.pageY;
@@ -383,6 +380,8 @@ $(function () {
         let sf = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation');
         let toDi = sf.length === 1 && $(sf).eq(0).hasClass('folder') ? $(sf).eq(0).data('path') : localStorage.getItem('data-path');
         let path = localStorage.getItem('data-path');
+
+        console.log(clipBoard)
 
         axios.post(`nf-file-manager/rearrange`, {
             to: toDi,

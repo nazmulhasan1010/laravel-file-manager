@@ -25,7 +25,7 @@ class FileManagerController extends Controller
 
         $contains = $this->get($path);
         $items = count($contains);
-        
+
         return view('nh-file-manager.file-manager', compact('contains', 'settings', 'items'));
     }
 
@@ -160,6 +160,7 @@ class FileManagerController extends Controller
         foreach ($cbf as $cb) {
             $lt = $this->pathValidation($cb['path'], $cb['type']);
             $fi = pathinfo($lt, PATHINFO_FILENAME);
+            $exp = pathinfo($lt, PATHINFO_DIRNAME);
 
             $tn = $df . '/' . $fi;
             if ($request->arrange === 'new' && in_array($fi, $exists->toArray(), true)) {
@@ -176,13 +177,21 @@ class FileManagerController extends Controller
                     Storage::disk('public')->move($lt, $tn);
                 }
             }
+
             if ($cb['type'] === 'folder') {
-                $fip = collect($this->get($cb['path']));
-                $k = [];
+                $fip = collect($this->getAllFiles($cb['path']));
+                $this->mkDir($tn);
                 foreach ($fip as $fp) {
-                    $k[] = $fp['type'];
+                    $d = $df . '/' . str_replace($exp . '/', '', $this->pathValidation($fp['dir'], 'folder'));
+                    $l = $this->pathValidation($fp['path']);
+                    $f = $d . '/' . $fp['name'];
+                    $this->mkDir($d);
+                    Storage::disk('public')->copy($l, $f);
                 }
-                return $k;
+
+                if ($request->clipboard['type'] === 'cut'){
+                    Storage::disk('public')->deleteDirectory($lt);
+                }
             }
 
         }
