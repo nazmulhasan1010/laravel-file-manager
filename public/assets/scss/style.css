@@ -258,6 +258,20 @@ button {
 #app .files-list {
   height: 100%;
 }
+#app .files-list .list-view-opened-folder {
+  background-color: #343a40;
+  margin-bottom: 10px;
+  padding: 2px 20px;
+  border: none;
+  outline: none;
+  width: 100%;
+  border-radius: 4px;
+  margin-top: 5px;
+  border-bottom: 2px solid transparent;
+}
+#app .files-list .list-view-opened-folder:focus {
+  border-bottom-color: #fd7e14;
+}
 #app .files-list .option-bar .file-options .option {
   text-decoration: none;
   margin-right: 10px;
@@ -268,6 +282,10 @@ button {
 }
 #app .files-list .option-bar .file-options .option.nfp-unable {
   color: #6c757d;
+}
+#app .files-list .option-bar .file-options .option.nf-active {
+  background-color: #343a40;
+  border-radius: 5px;
 }
 #app .files-list .option-bar .file-options .option:not(.nfp-unable):hover {
   background-color: #343a40;

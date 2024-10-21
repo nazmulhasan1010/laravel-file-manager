@@ -1,5 +1,5 @@
 {
     "theme": "dark",
-    "view": "list",
+    "view": "grid",
     "base": "storage"
 }

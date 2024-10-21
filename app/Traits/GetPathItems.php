@@ -140,4 +140,17 @@ trait GetPathItems
         }
         return 1;
     }
+
+    /**
+     * @param $path
+     * @return int
+     */
+    public function pathCheck($path): int
+    {
+        $np = $this->pathValidation(str_replace('\\', '/', $path));
+        if (Storage::disk('public')->exists($np)) {
+            return true;
+        }
+        return false;
+    }
 }

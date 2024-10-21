@@ -32,12 +32,15 @@ class FileManagerController extends Controller
 
     /**
      * @param Request $request
-     * @return array
+     * @return array|int
      */
-    public function items(Request $request): array
+    public function items(Request $request)
     {
         $path = $request->input('path');
-        return $this->get($path);
+        if ($this->pathCheck($path)) {
+            return $this->get($path);
+        }
+        return 0;
     }
 
 
@@ -189,7 +192,7 @@ class FileManagerController extends Controller
                     Storage::disk('public')->copy($l, $f);
                 }
 
-                if ($request->clipboard['type'] === 'cut'){
+                if ($request->clipboard['type'] === 'cut') {
                     Storage::disk('public')->deleteDirectory($lt);
                 }
             }

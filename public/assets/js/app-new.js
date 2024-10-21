@@ -3,7 +3,7 @@ $(function () {
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     const wm = new bootstrap.Modal('#arrange-modal');
     let clipBoard = {};
-    let history = {active: null, paths: []}, addressBar = $('.list-view-opened-folder');
+    let history = {active: null, paths: []};
 
     async function loadSettings() {
         let response = await fetch('assets/js/settings.json');
@@ -27,10 +27,10 @@ $(function () {
 
     async function placeItems(folder, listView = 'false', dataPath = null, back = false) {
         return new Promise((resolve, reject) => {
-            let path = dataPath ?? $(folder).data('path'), rd = null;
+            let path = dataPath ?? $(folder).data('path');
             if (!back) history.paths.push(path);
             history.active = history.paths.length - 1;
-
+            localStorage.setItem('data-path', path);
             loadSettings().then(data => {
                 const theme = data.theme;
                 const view = data.view;
@@ -39,75 +39,78 @@ $(function () {
                     let data = response.data,
                         fItems = $('<ul>', {class: 'folder-items'}), fItem, lItem, gItem;
 
-                    if (data !== 0) {
-                        localStorage.setItem('data-path', path);
-                        if (listView === 'all') {
-                            folder = $(`li[data-path="${path.replace(/\\/g, '\\\\')}"]`);
-                            $('#list-view-table').empty();
-                            $('#list-view-grid').empty();
-                        }
-
-                        if (listView === 'true') {
-                            $('#list-view-table').empty();
-                            $('#list-view-grid').empty();
-                        } else {
-                            $(folder).children('.folder-items').remove();
-                            $(folder).attr('data-load', 'true')
-                        }
-
-                        $.each(data, (i, item) => {
-                            listView === 'true' ? itemsView() : menuView();
-                            if (listView === 'all') itemsView();
-
-                            function itemsView() {
-                                availableOption();
-                                $(addressBar).val(path)
-                                let info = getTypeIconByExt(item.ext);
-                                let icon = item.type === 'folder' ? 'bx-folder' : info.icon;
-                                let tClass = item.type === 'folder' ? 'folder' : 'file';
-
-                                lItem = $('<tr>', {
-                                    'data-item': item.items, 'data-path': item.path, class: tClass,
-                                    html: `<td><i class="bx ${icon}"></i>${item.name}</td>
-                                <td>${item.type}</td><td>${item.size}</td>`,
-                                })
-
-                                gItem = $('<a>', {
-                                    'data-item': item.items, 'data-path': item.path,
-                                    class: `list-item ${tClass}`,
-                                    html: `<i class="bx ${icon}"></i><p>${item.name}</p>`
-                                })
-
-                                if (view === 'list') {
-                                    $('#list-view-table').append(lItem)
-                                } else if (view === 'grid') {
-                                    $('#list-view-grid').append(gItem)
-                                }
-                            }
-
-                            function menuView() {
-                                if (item.type === 'folder') {
-                                    fItem = $('<li>', {
-                                        class: 'folder opened',
-                                        html: `<i class='opener bx bx-chevron-right'></i><span><i class='bx bx-folder'></i>${item.name}</span>`,
-                                        'data-item': item.items, 'data-path': item.path,
-                                    })
-                                } else if (item.type === 'file') {
-                                    let info = getTypeIconByExt(item.ext);
-                                    fItem = $('<li>', {
-                                        class: 'file',
-                                        html: `<span><i class='bx ${info.icon}'></i>${item.name}</span>`
-                                    })
-                                }
-                                $(folder).append($(fItems).append(fItem))
-                            }
-                        })
+                    if (listView === 'true') {
+                        $('#list-view-table').empty();
+                        $('#list-view-grid').empty();
                     } else {
-                        $(addressBar).val(localStorage.getItem('data-path'))
+                        $(folder).children('.folder-items').remove();
+                        $(folder).attr('data-load', 'true')
                     }
+
+                    if (listView === 'all') {
+                        $('#list-view-table').empty();
+                        $('#list-view-grid').empty();
+                    }
+
+                    $.each(data, (i, item) => {
+                        console.log(listView)
+                        listView === 'true' ? itemsView() : menuView();
+                        if (listView === 'all') itemsView();
+
+                        function itemsView() {
+                            console.log('list view')
+                            availableOption();
+                            let ofn = $(folder).children('span').text();
+                            $('.list-view-opened-folder').text(ofn.length > 0 ? ofn : base)
+                            let info = getTypeIconByExt(item.ext);
+                            let icon = item.type === 'folder' ? 'bx-folder' : info.icon;
+                            let tClass = item.type === 'folder' ? 'folder' : 'file';
+
+                            lItem = $('<tr>', {
+                                'data-item': item.items,
+                                'data-path': item.path,
+                                class: tClass,
+                                html: `<td><i class="bx ${icon}"></i>${item.name}</td>
+                                <td>${item.type}</td>
+                                <td>${item.size}</td>`,
+                            })
+
+                            gItem = $('<a>', {
+                                'data-item': item.items,
+                                'data-path': item.path,
+                                class: `list-item ${tClass}`,
+                                html: `<i class="bx ${icon}"></i>
+                                <p>${item.name}</p>`
+                            })
+
+                            if (view === 'list') {
+                                $('#list-view-table').append(lItem)
+                            } else if (view === 'grid') {
+                                $('#list-view-grid').append(gItem)
+                            }
+                        }
+
+                        function menuView() {
+                            console.log('menu view')
+                            if (item.type === 'folder') {
+                                fItem = $('<li>', {
+                                    class: 'folder opened',
+                                    html: `<i class='opener bx bx-chevron-right'></i><span><i class='bx bx-folder'></i>${item.name}</span>`,
+                                    'data-item': item.items,
+                                    'data-path': item.path,
+                                })
+                            } else if (item.type === 'file') {
+                                let info = getTypeIconByExt(item.ext);
+                                fItem = $('<li>', {
+                                    class: 'file',
+                                    html: `<span><i class='bx ${info.icon}'></i>${item.name}</span>`
+                                })
+                            }
+                            $(folder).append($(fItems).append(fItem))
+                        }
+                    })
                 })
             })
-
             resolve()
         })
     }
@@ -223,23 +226,6 @@ $(function () {
         })
     });
 
-    $('input').focus(function () {
-        $(this).select();
-    });
-
-    $(addressBar).keydown(async function (event) {
-        if (event.key === "Enter" || event.keyCode === 13) {
-            let value = $(this).val(), srp = value.replace(/\//g, '\\');
-            let path = value ? srp : localStorage.getItem('data-path');
-            if (path) await placeItems(null, 'all', path);
-           $(`li[data-path="${srp.replace(/\\/g, '\\\\')}"]`).addClass('opened');
-        }
-    });
-    $(addressBar).change(() => {
-        $(addressBar).val(localStorage.getItem('data-path'))
-    })
-
-
     $(document).off('click', '.nf-option-rename').on('click', '.nf-option-rename', async function () {
         let sf = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation').eq(0);
         let ft = $(sf).hasClass('file') ? 'file' : 'folder';
@@ -263,7 +249,7 @@ $(function () {
             }).then(async function (response) {
                 if (response.status === 200) {
                     om.hide();
-                    if (op) await placeItems(null, 'all', op);
+                    if (op) await placeItems(null, 'true', op);
                 }
             })
         })
@@ -408,17 +394,21 @@ $(function () {
         let toDi = sf.length === 1 && $(sf).eq(0).hasClass('folder') ? $(sf).eq(0).data('path') : localStorage.getItem('data-path');
         let path = localStorage.getItem('data-path');
 
+        console.log(clipBoard)
+
         axios.post(`nf-file-manager/rearrange`, {
             to: toDi,
             arrange: $(this).data('paste') ?? null,
             clipboard: clipBoard
         }).then(async function (response) {
+            console.log(response.data)
             if (response.data === 'conflict') {
                 wm.show()
             } else {
                 if (response.status === 200) {
-                    if (path) await placeItems(null, 'all', path);
+                    if (path) await placeItems(null, 'true', path);
                 }
+                console.log(response.data)
                 wm.hide();
             }
         });

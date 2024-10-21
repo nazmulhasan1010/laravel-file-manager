@@ -93,7 +93,6 @@
                     <div class="card border-0">
                         <div class="d-flex align-items-center justify-content-between option-bar">
                             <div class="file-options d-flex">
-                                <h6 class="option card-title text-capitalize m-0 list-view-opened-folder">{{ $settings['base'] }}</h6>
                                 <button class="option nf-option-back nfp-unable">
                                     <i class='bx bx-chevron-left'></i></button>
                                 <button class="option nf-option-forward nfp-unable">
@@ -160,7 +159,8 @@
                             </div>
                         </div>
                     </div>
-                    <hr>
+                    <hr class="mb-0">
+                    <input type="search" class="list-view-opened-folder" value="{{ $settings['base'] }}">
                     <div class="list-view">
                         <table @class(['table view list-table view-list','d-none' => ($settings['view'] !== 'list')])>
                             <thead>

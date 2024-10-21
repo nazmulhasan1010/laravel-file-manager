@@ -316,6 +316,22 @@ button {
     .files-list {
         height: 100%;
 
+        .list-view-opened-folder {
+            background-color: $gray-800;
+            margin-bottom: 10px;
+            padding: 2px 20px;
+            border: none;
+            outline: none;
+            width: 100%;
+            border-radius: 4px;
+            margin-top: 5px;
+            border-bottom: 2px solid transparent;
+
+            &:focus {
+                border-bottom-color: $orange;
+            }
+        }
+
         .option-bar {
             .file-options {
                 .option {
@@ -330,6 +346,10 @@ button {
                         color: $gray-600;
                     }
 
+                    &.nf-active {
+                        background-color: $gray-800;
+                        border-radius: 5px;
+                    }
 
                     &:not(.nfp-unable):hover {
                         background-color: $gray-800;
