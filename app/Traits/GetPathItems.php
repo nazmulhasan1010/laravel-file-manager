@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -22,6 +23,7 @@ trait GetPathItems
         foreach ($folders as $folder) {
             $fif = File::allFiles($folder);
             $fof = File::directories($folder);
+            $lm = File::lastModified($folder);
             $ti = count($fif) + count($fof);
             $tsz = 0;
 
@@ -35,7 +37,7 @@ trait GetPathItems
             $items[] = [
                 'path' => $path, 'paths' => str_replace('\\', '/', $path),
                 'type' => 'folder', 'items' => $ti, 'size' => $size,
-                'name' => File::basename($folder)
+                'name' => File::basename($folder), 'modify' => Carbon::parse($lm)->format('d-m-y h:i A'),
             ];
         }
 
@@ -48,7 +50,7 @@ trait GetPathItems
 
             $items[] = [
                 'type' => 'file', 'name' => $name, 'size' => $size,
-                'mime' => $mt, 'modified' => $lm, 'ext' => $ext,
+                'mime' => $mt, 'modify' => Carbon::parse($lm)->format('d-m-y h:i A'), 'ext' => $ext,
                 'path' => 'storage/' . preg_replace('/^.*public\\\\/', '', realpath($file))
             ];
         }
@@ -75,7 +77,7 @@ trait GetPathItems
 
             $files[] = [
                 'type' => 'file', 'name' => $name, 'size' => $size,
-                'mime' => $mt, 'modified' => $lm, 'ext' => $ext, 'dir' => $path,
+                'mime' => $mt, 'modify' => Carbon::parse($lm)->format('d-m-y h:i A'), 'ext' => $ext, 'dir' => $path,
                 'path' => 'storage/' . preg_replace('/^.*public\\\\/', '', realpath($file))
             ];
         }

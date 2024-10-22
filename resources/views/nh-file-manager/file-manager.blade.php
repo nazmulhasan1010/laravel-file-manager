@@ -161,12 +161,13 @@
                     </div>
                     <hr class="mb-0">
                     <input type="search" class="list-view-opened-folder" value="{{ $settings['base'] }}">
-                    <div class="list-view">
+                    <div class="list-view position-relative">
                         <table @class(['table view list-table view-list','d-none' => ($settings['view'] !== 'list')])>
                             <thead>
                             <tr>
                                 <th scope="col">Name</th>
                                 <th scope="col">Type</th>
+                                <th scope="col">Date</th>
                                 <th scope="col">Size</th>
                             </tr>
                             </thead>
@@ -174,6 +175,10 @@
                         </table>
                         <div
                             @class(['list-grid view view-grid','d-none' => ($settings['view'] !== 'grid')]) id="list-view-grid"></div>
+
+                        <div class="card position-absolute p-2">
+
+                        </div>
                     </div>
                 </div>
             </div>

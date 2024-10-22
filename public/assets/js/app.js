@@ -69,7 +69,7 @@ $(function () {
                                 lItem = $('<tr>', {
                                     'data-item': item.items, 'data-path': item.path, class: tClass,
                                     html: `<td><i class="bx ${icon}"></i>${item.name}</td>
-                                <td>${item.type}</td><td>${item.size}</td>`,
+                                    <td>${item.type}</td><td>${item.modify}</td><td>${item.size}</td>`,
                                 })
 
                                 gItem = $('<a>', {
@@ -161,8 +161,23 @@ $(function () {
 
     $(document).off('dblclick', opener).on('dblclick', '.list-view .folder, .list-view .file', async function () {
         let clicked = $(this);
-        await placeItems(clicked, 'true');
+        if (!$(clicked).hasClass('file'))
+            await placeItems(clicked, 'true');
     });
+
+    let hoverTimer;
+
+    $(document).off('mouseover mouseout', '.list-view .folder, .list-view .file')
+        .on('mouseover', '.list-view .folder, .list-view .file', function () {
+            let clicked = $(this);
+            hoverTimer = setTimeout(() => {
+                console.log("Hovered for 3 seconds:", clicked);
+            }, 3000);
+
+        }).on('mouseout', '.list-view .folder, .list-view .file', function () {
+        clearTimeout(hoverTimer);
+    });
+
 
     $(document).on('click', function (event) {
         if (!$(event.target).closest('.list-view .folder, .list-view .file').length) {
@@ -232,7 +247,7 @@ $(function () {
             let value = $(this).val(), srp = value.replace(/\//g, '\\');
             let path = value ? srp : localStorage.getItem('data-path');
             if (path) await placeItems(null, 'all', path);
-           $(`li[data-path="${srp.replace(/\\/g, '\\\\')}"]`).addClass('opened');
+            $(`li[data-path="${srp.replace(/\\/g, '\\\\')}"]`).addClass('opened');
         }
     });
     $(addressBar).change(() => {
