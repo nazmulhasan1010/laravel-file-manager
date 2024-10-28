@@ -4,6 +4,7 @@ $(function () {
     const wm = new bootstrap.Modal('#arrange-modal');
     let clipBoard = {};
     let history = {active: null, paths: []}, addressBar = $('.list-view-opened-folder');
+    let hoverTimer, infoCard = $('.list-view .info-card');
 
     async function loadSettings() {
         let response = await fetch('assets/js/settings.json');
@@ -130,11 +131,12 @@ $(function () {
         })
     }
 
-    function placeIcon(item, ch = false) {
-        const folder = $(item).parent('.folder'),
+
+    function placeIcon(item, ch = false, fo = null) {
+        const folder = fo ?? $(item).parent('.folder'),
             isOpen = folder.hasClass('opened'),
-            [iconOpen, iconClose] = ['bx-folder-open', 'bx-folder'],
-            [openerOpen, openerClosed] = ['bx-chevron-down', 'bx-chevron-right'];
+            [iconOpen, iconClose] = $(folder).hasClass('trash') ? ['bxs-trash-alt', 'bx-trash-alt'] : ['bx-folder-open', 'bx-folder'],
+            [openerOpen, openerClosed] = $(folder).hasClass('trash') ? ['bx', 'bx'] : ['bx-chevron-down', 'bx-chevron-right'];
 
         let folderIcon = $(item).hasClass('opener') ? $(item).siblings('span').children('i') : $(item).children('i');
         let openerIcon = $(item).parent().children('i');
@@ -151,6 +153,8 @@ $(function () {
             } else {
                 folder.css('margin-left', '26px')
             }
+
+            if ($(folder).hasClass('trash')) folder.css('margin-left', '26px');
         }
     }
 
@@ -159,23 +163,62 @@ $(function () {
         await opener(this)
     });
 
+    $(document).off('mouseover mouseout', '.list-view .folder, .list-view .file').on('mouseover', '.list-view .folder, .list-view .file', async function () {
+        let path = $(this).data('path'),
+            position = $(this).position();
+
+        async function hoverEvent() {
+            return new Promise((resolve, reject) => {
+                hoverTimer = setTimeout(() => {
+                    axios.get('nf-file-manager/get-info', {
+                        params: {path: path,}
+                    }).then(function (response) {
+                        let info = response.data;
+                        let infoName = $('<p>', {class: 'm-0', html: `Name: <span>${info.basename}</span>`}),
+                            infoSize = $('<p>', {class: 'm-0', html: `Size: <span>${info.size}</span>`}),
+                            infoDate = $('<p>', {class: 'm-0', html: `Date: <span>${info.modify}</span>`}),
+                            infoType = $('<p>', {class: 'm-0', html: `Type: <span>${info.mimeType}</span>`});
+                        $(infoCard).empty().append($(infoName), $(infoSize), $(infoType), $(infoDate));
+                        $(infoCard).show();
+                        resolve();
+                    })
+                }, 1500);
+            })
+        }
+
+        await hoverEvent().then(() => {
+            let uw = (($(infoCard).width() - $(this).width()) / 2),
+                lp = uw * -1,
+                pr = ($(this).parents('.list-view').width() - ($(this).width() + position.left));
+
+            let left = position.left + lp;
+            if (position.left < uw) {
+                left = position.left;
+            }
+            if (pr < (uw + 20)) {
+                left = position.left - (uw * 2);
+            }
+
+            if (pr < (uw + 50)) {
+                left = position.left - (uw * 1.2);
+            }
+
+            $(infoCard).css({
+                top: position.top + $(this).height() + 15,
+                left: left
+            })
+        })
+    }).on('mouseout', '.list-view .folder, .list-view .file', function () {
+        clearTimeout(hoverTimer);
+        $(infoCard).hide();
+    });
+
     $(document).off('dblclick', opener).on('dblclick', '.list-view .folder, .list-view .file', async function () {
         let clicked = $(this);
         if (!$(clicked).hasClass('file'))
             await placeItems(clicked, 'true');
-    });
-
-    let hoverTimer;
-
-    $(document).off('mouseover mouseout', '.list-view .folder, .list-view .file')
-        .on('mouseover', '.list-view .folder, .list-view .file', function () {
-            let clicked = $(this);
-            hoverTimer = setTimeout(() => {
-                console.log("Hovered for 3 seconds:", clicked);
-            }, 3000);
-
-        }).on('mouseout', '.list-view .folder, .list-view .file', function () {
         clearTimeout(hoverTimer);
+        $(infoCard).hide();
     });
 
 
@@ -183,6 +226,8 @@ $(function () {
         if (!$(event.target).closest('.list-view .folder, .list-view .file').length) {
             $('.list-view .folder, .list-view .file').removeClass('selected');
         }
+        clearTimeout(hoverTimer);
+        $(infoCard).hide();
     });
 
     $(document).off('click', opener).on('click', '.files .folder span:not(.file span)', async function () {
@@ -247,7 +292,10 @@ $(function () {
             let value = $(this).val(), srp = value.replace(/\//g, '\\');
             let path = value ? srp : localStorage.getItem('data-path');
             if (path) await placeItems(null, 'all', path);
-            $(`li[data-path="${srp.replace(/\\/g, '\\\\')}"]`).addClass('opened');
+            let Mf = $(`li[data-path="${srp.replace(/\\/g, '\\\\')}"]`),
+                [openerOpen, openerClosed] = ['bx-chevron-down', 'bx-chevron-right'];
+            $(Mf).addClass('opened');
+            $(Mf).find('.opener').toggleClass(`${openerOpen} ${openerClosed}`);
         }
     });
     $(addressBar).change(() => {
@@ -338,36 +386,10 @@ $(function () {
         } else {
             $(this).toggleClass('selected-nf-operation')
         }
+        clearTimeout(hoverTimer);
+        $(infoCard).hide();
         availableOption();
     });
-
-    function availableOption() {
-        let sl = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation').length;
-        let $files = $('.file-options .for-select-item').not('.nf-option-paste');
-
-        if (sl === 1) {
-            $files.removeClass('nfp-unable').addClass('nfp-able')
-        } else if (sl > 1) {
-            $files.removeClass('nfp-unable').addClass('nfp-able')
-            $('.file-options .nf-option-rename,.file-options .nf-option-edit').addClass('nfp-unable').removeClass('nfp-able')
-        } else {
-            $files.removeClass('nfp-able').addClass('nfp-unable')
-        }
-
-        if (history.active) {
-            if (history.active === 1 && history.paths.length > 2) {
-                $('.file-options .nf-option-back').addClass('nfp-unable').removeClass('nfp-able')
-            } else {
-                $('.file-options .nf-option-back').removeClass('nfp-unable').addClass('nfp-able')
-            }
-        } else {
-            if (history.paths.length > 1) {
-                $('.file-options .nf-option-back').removeClass('nfp-unable').addClass('nfp-able')
-            }
-        }
-
-        if (clipBoard.status === 1) $('.file-options .nf-option-paste').removeClass('nfp-unable').addClass('nfp-able');
-    }
 
 
     $(document).on('click', '.file-options .nf-option-delete.nfp-able', function () {
@@ -433,6 +455,8 @@ $(function () {
             } else {
                 if (response.status === 200) {
                     if (path) await placeItems(null, 'all', path);
+                    if (response.data === 1) clipBoard = {};
+                    availableOption()
                 }
                 wm.hide();
             }
@@ -454,6 +478,33 @@ $(function () {
         await placeItems(null, 'true', data.base)
     })
 
+    function availableOption() {
+        let sl = $('.list-view .folder.selected-nf-operation, .list-view .file.selected-nf-operation').length;
+        let $files = $('.file-options .for-select-item').not('.nf-option-paste');
+
+        if (sl === 1) {
+            $files.removeClass('nfp-unable').addClass('nfp-able')
+        } else if (sl > 1) {
+            $files.removeClass('nfp-unable').addClass('nfp-able')
+            $('.file-options .nf-option-rename,.file-options .nf-option-edit').addClass('nfp-unable').removeClass('nfp-able')
+        } else {
+            $files.removeClass('nfp-able').addClass('nfp-unable')
+        }
+
+        if (history.active) {
+            if (history.active === 1 && history.paths.length > 2) {
+                $('.file-options .nf-option-back').addClass('nfp-unable').removeClass('nfp-able')
+            } else {
+                $('.file-options .nf-option-back').removeClass('nfp-unable').addClass('nfp-able')
+            }
+        } else {
+            if (history.paths.length > 1) {
+                $('.file-options .nf-option-back').removeClass('nfp-unable').addClass('nfp-able')
+            }
+        }
+
+        $('.file-options .nf-option-paste').toggleClass('nfp-able', clipBoard.status === 1).toggleClass('nfp-unable', clipBoard.status !== 1);
+    }
 
     function getTypeIconByExt(ext) {
         let $types = {

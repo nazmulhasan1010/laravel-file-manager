@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use JsonException;
 
-trait GetPathItems
+trait NFManager
 {
     /**
      * @param $path
@@ -25,6 +25,7 @@ trait GetPathItems
             $fof = File::directories($folder);
             $lm = File::lastModified($folder);
             $ti = count($fif) + count($fof);
+            $bn = File::basename($folder);
             $tsz = 0;
 
             foreach ($fif as $file) {
@@ -34,11 +35,13 @@ trait GetPathItems
             $size = $this->formatSizeUnits($tsz);
             $path = preg_replace('/^.*public\\\\/', '', $folder);
 
-            $items[] = [
-                'path' => $path, 'paths' => str_replace('\\', '/', $path),
-                'type' => 'folder', 'items' => $ti, 'size' => $size,
-                'name' => File::basename($folder), 'modify' => Carbon::parse($lm)->format('d-m-y h:i A'),
-            ];
+            if ($bn !== 'trash') {
+                $items[] = [
+                    'path' => $path, 'paths' => str_replace('\\', '/', $path),
+                    'type' => 'folder', 'items' => $ti, 'size' => $size,
+                    'name' => $bn, 'modify' => Carbon::parse($lm)->format('d-m-y h:i A'),
+                ];
+            }
         }
 
         foreach ($files as $file) {
@@ -123,11 +126,15 @@ trait GetPathItems
     /**
      * @param $path
      * @param $type
-     * @return array|string|string[]
+     * @param bool $arrange
+     * @return array|string
      */
-    public function pathValidation($path, $type = null): array|string
+    public function pathValidation($path, $type = null, bool $arrange = false): array|string
     {
         $pd = $type === 'folder' ? str_replace('storage\\', '', $path) : str_replace('storage/', '', $path);
+        if ($arrange && $path === 'storage') {
+            return '';
+        }
         return str_replace('\\', '/', $pd);
     }
 
@@ -154,5 +161,83 @@ trait GetPathItems
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param $oac
+     * @return mixed
+     * @throws JsonException
+     */
+    public function mixedOAC($oac): mixed
+    {
+        return json_decode(json_encode($oac, JSON_THROW_ON_ERROR), false, 512, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @param $path
+     * @return array
+     */
+    public function getInfo($path): array
+    {
+        return [
+            'exists' => File::exists($path),
+            'size' => $this->formatSizeUnits(File::size($path)),
+            'modify' => Carbon::parse(File::lastModified($path))->format('d-m-y h:i A'),
+            'mimeType' => File::mimeType($path),
+            'type' => File::type($path),
+            'name' => File::name($path),
+            'basename' => File::basename($path),
+            'extension' => File::extension($path),
+        ];
+    }
+
+    /**
+     * @param $cbf
+     * @param $df
+     * @param $at
+     * @param $ao
+     * @param  $exists
+     * @return void
+     */
+    public function arrange($cbf, $df, $at, $ao, $exists = null): void
+    {
+        foreach ($cbf as $cb) {
+            $lt = $this->pathValidation($cb['path'], $cb['type']);
+            $fi = pathinfo($lt, PATHINFO_FILENAME);
+            $exp = pathinfo($lt, PATHINFO_DIRNAME);
+
+            $tn = $df . '/' . $fi;
+            if ($ao === 'new' && in_array($fi, $exists->toArray(), true)) {
+                $tn .= '-copy';
+            }
+
+            if ($cb['type'] === 'file') {
+                $ext = pathinfo($lt, PATHINFO_EXTENSION);
+                $tn .= '.' . $ext;
+
+                if ($at === 'copy') {
+                    Storage::disk('public')->copy($lt, $tn);
+                } elseif ($at === 'cut') {
+                    Storage::disk('public')->move($lt, $tn);
+                }
+            }
+
+            if ($cb['type'] === 'folder') {
+                $fip = collect($this->getAllFiles($cb['path']));
+                $this->mkDir($tn);
+                foreach ($fip as $fp) {
+                    $d = $df . '/' . str_replace($exp . '/', '', $this->pathValidation($fp['dir'], 'folder'));
+                    $l = $this->pathValidation($fp['path']);
+                    $f = $d . '/' . $fp['name'];
+                    $this->mkDir($d);
+                    Storage::disk('public')->copy($l, $f);
+                }
+
+                if ($at === 'cut') {
+                    Storage::disk('public')->deleteDirectory($lt);
+                }
+            }
+
+        }
     }
 }

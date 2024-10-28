@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Traits\GetPathItems;
+use App\Models\Trash;
+use App\Traits\NFManager;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -12,7 +13,7 @@ use JsonException;
 
 class FileManagerController extends Controller
 {
-    use GetPathItems;
+    use NFManager;
 
     /**
      * @return Factory|View|Application|\Illuminate\View\View
@@ -20,8 +21,8 @@ class FileManagerController extends Controller
      */
     public function index()
     {
-        $settings = $this->settings();
-        $path = public_path($settings['base']);
+        $settings = $this->mixedOAC($this->settings());
+        $path = public_path($settings->base);
 
         $contains = $this->get($path);
         $items = count($contains);
@@ -43,6 +44,14 @@ class FileManagerController extends Controller
         return 0;
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function information(Request $request): array
+    {
+        return $this->getInfo($request->path);
+    }
 
     /**
      * @param Request $request
@@ -158,46 +167,9 @@ class FileManagerController extends Controller
             return 'conflict';
         }
 
-        $df = $this->pathValidation($request->to, 'folder');
+        $df = $this->pathValidation($request->to, 'folder', true);
 
-        foreach ($cbf as $cb) {
-            $lt = $this->pathValidation($cb['path'], $cb['type']);
-            $fi = pathinfo($lt, PATHINFO_FILENAME);
-            $exp = pathinfo($lt, PATHINFO_DIRNAME);
-
-            $tn = $df . '/' . $fi;
-            if ($request->arrange === 'new' && in_array($fi, $exists->toArray(), true)) {
-                $tn .= ' -copy';
-            }
-
-            if ($cb['type'] === 'file') {
-                $ext = pathinfo($lt, PATHINFO_EXTENSION);
-                $tn .= '.' . $ext;
-
-                if ($request->clipboard['type'] === 'copy') {
-                    Storage::disk('public')->copy($lt, $tn);
-                } elseif ($request->clipboard['type'] === 'cut') {
-                    Storage::disk('public')->move($lt, $tn);
-                }
-            }
-
-            if ($cb['type'] === 'folder') {
-                $fip = collect($this->getAllFiles($cb['path']));
-                $this->mkDir($tn);
-                foreach ($fip as $fp) {
-                    $d = $df . '/' . str_replace($exp . '/', '', $this->pathValidation($fp['dir'], 'folder'));
-                    $l = $this->pathValidation($fp['path']);
-                    $f = $d . '/' . $fp['name'];
-                    $this->mkDir($d);
-                    Storage::disk('public')->copy($l, $f);
-                }
-
-                if ($request->clipboard['type'] === 'cut') {
-                    Storage::disk('public')->deleteDirectory($lt);
-                }
-            }
-
-        }
+        $this->arrange($cbf, $df, $request->clipboard['type'], $request->arrange, $exists);
         return 1;
     }
 
@@ -205,15 +177,38 @@ class FileManagerController extends Controller
     /**
      * @param Request $request
      * @return int
+     * @throws JsonException
      */
     public function delete(Request $request): int
     {
         $paths = $request->query('path');
+        $trash = $this->mixedOAC($this->settings())->trash;
 
         foreach ($paths as $path) {
+            if ($trash === 'on') {
+                Trash::create([
+                    'file_name' => pathinfo($path['path'], PATHINFO_FILENAME),
+                    'path' => 'trash/' . basename($path['path']),
+                    'type' => $path['type'],
+                    'original_path' => $path['path']
+                ]);
+
+                $cbf[] = [
+                    'path' => $path['path'],
+                    'type' => $path['type']
+                ];
+
+                if (!$this->pathCheck('trash')) {
+                    Storage::disk('public')->makeDirectory('trash');
+                }
+
+                $df = $this->pathValidation('trash', 'folder', true);
+                $this->arrange($cbf, $df, 'cut', 'new', collect([]));
+            }
+
             $pv = $this->pathValidation($path['path'], $path['type']);
 
-            if ($path['type'] === 'folder') {
+            if ($path['type'] === 'folder' && $trash !== 'on') {
                 Storage::disk('public')->deleteDirectory($pv);
             } else {
                 Storage::disk('public')->delete($pv);

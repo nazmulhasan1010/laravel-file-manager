@@ -1,0 +1,38 @@
+//        foreach ($cbf as $cb) {
+//            $lt = $this->pathValidation($cb['path'], $cb['type']);
+//            $fi = pathinfo($lt, PATHINFO_FILENAME);
+//            $exp = pathinfo($lt, PATHINFO_DIRNAME);
+//
+//            $tn = $df . '/' . $fi;
+//            if ($request->arrange === 'new' && in_array($fi, $exists->toArray(), true)) {
+//                $tn .= ' -copy';
+//            }
+//
+//            if ($cb['type'] === 'file') {
+//                $ext = pathinfo($lt, PATHINFO_EXTENSION);
+//                $tn .= '.' . $ext;
+//
+//                if ($request->clipboard['type'] === 'copy') {
+//                    Storage::disk('public')->copy($lt, $tn);
+//                } elseif ($request->clipboard['type'] === 'cut') {
+//                    Storage::disk('public')->move($lt, $tn);
+//                }
+//            }
+//
+//            if ($cb['type'] === 'folder') {
+//                $fip = collect($this->getAllFiles($cb['path']));
+//                $this->mkDir($tn);
+//                foreach ($fip as $fp) {
+//                    $d = $df . '/' . str_replace($exp . '/', '', $this->pathValidation($fp['dir'], 'folder'));
+//                    $l = $this->pathValidation($fp['path']);
+//                    $f = $d . '/' . $fp['name'];
+//                    $this->mkDir($d);
+//                    Storage::disk('public')->copy($l, $f);
+//                }
+//
+//                if ($request->clipboard['type'] === 'cut') {
+//                    Storage::disk('public')->deleteDirectory($lt);
+//                }
+//            }
+//
+//        }

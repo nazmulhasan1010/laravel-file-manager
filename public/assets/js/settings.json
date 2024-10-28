@@ -1,5 +1,6 @@
 {
     "theme": "dark",
     "view": "grid",
-    "base": "storage"
+    "base": "storage",
+    "trash": "on"
 }

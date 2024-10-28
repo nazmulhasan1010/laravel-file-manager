@@ -20,6 +20,10 @@
                 <i class='bx bx-folder'></i>
                 Files
             </a>
+            <a href="" class="menu-item">
+                <i class='bx bx-trash-alt'></i>
+                Trash
+            </a>
         </div>
     </div>
     <div class="right-side file-manager bg-dark">
@@ -69,9 +73,9 @@
                     <hr>
                     <div class="files-menu px-3">
                         <ul class="files">
-                            <li class="folder opened" data-path="{{ $settings['base'] }}" data-item="{{ $items }}"
+                            <li class="folder opened" data-path="{{ $settings->base }}" data-item="{{ $items }}"
                                 data-load="true">
-                                <span>{{ $settings['base'] }}</span>
+                                <span>{{ $settings->base }}</span>
                                 <ul class="folder-items">
                                     @foreach($contains as $file)
                                         @if($file['type'] === 'folder')
@@ -85,6 +89,9 @@
                                         @endif
                                     @endforeach
                                 </ul>
+                            </li>
+                            <li class="folder trash" data-path="{{ $settings->base . '/trash' }}" data-item="{{ $items }}">
+                                <span>Trash</span>
                             </li>
                         </ul>
                     </div>
@@ -147,12 +154,12 @@
                                         <li><a class="dropdown-item option setting-option" data-key="view"
                                                data-value="grid">
                                                 <span><i class='bx bx-layer'></i>Icon</span>
-                                                <i @class(['bx check-ico','bx-check-circle' => ($settings['view'] === 'grid')])></i></a>
+                                                <i @class(['bx check-ico','bx-check-circle' => ($settings->view === 'grid')])></i></a>
                                         </li>
                                         <li><a class="dropdown-item option setting-option" data-key="view"
                                                data-value="list">
                                                 <span><i class='bx bx-list-ul'></i>List</span>
-                                                <i @class(['bx check-ico','bx-check-circle' => ($settings['view'] === 'list')])></i></a>
+                                                <i @class(['bx check-ico','bx-check-circle' => ($settings->view === 'list')])></i></a>
                                         </li>
                                     </ul>
                                 </div>
@@ -160,9 +167,12 @@
                         </div>
                     </div>
                     <hr class="mb-0">
-                    <input type="search" class="list-view-opened-folder" value="{{ $settings['base'] }}">
+                    <div class="address-bar">
+                        <input type="search" class="list-view-opened-folder" value="{{ $settings->base }}">
+                        <p class="item-count-show">10 Items</p>
+                    </div>
                     <div class="list-view position-relative">
-                        <table @class(['table view list-table view-list','d-none' => ($settings['view'] !== 'list')])>
+                        <table @class(['table view list-table view-list','d-none' => ($settings->view !== 'list')])>
                             <thead>
                             <tr>
                                 <th scope="col">Name</th>
@@ -174,11 +184,9 @@
                             <tbody id="list-view-table"></tbody>
                         </table>
                         <div
-                            @class(['list-grid view view-grid','d-none' => ($settings['view'] !== 'grid')]) id="list-view-grid"></div>
+                            @class(['list-grid view view-grid','d-none' => ($settings->view !== 'grid')]) id="list-view-grid"></div>
 
-                        <div class="card position-absolute p-2">
-
-                        </div>
+                        <div class="card p-2 px-3 w-auto info-card">info card</div>
                     </div>
                 </div>
             </div>
